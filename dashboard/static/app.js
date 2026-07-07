@@ -1,6 +1,7 @@
 const $ = sel => document.querySelector(sel);
 
 let versions = [];
+let guides = [];
 let current = null;
 
 async function fetchJSON(url) {
@@ -15,6 +16,11 @@ async function fetchText(url) {
   return r.text();
 }
 
+async function fetchJSONOptional(url) {
+  try { return await fetchJSON(url); }
+  catch { return []; }
+}
+
 function groupByDate(list) {
   const map = new Map();
   for (const v of list) {
@@ -25,10 +31,32 @@ function groupByDate(list) {
   return [...map.entries()];
 }
 
+function renderGuideList() {
+  const nav = $('#guideList');
+  if (!guides.length) { nav.innerHTML = ''; return; }
+  nav.innerHTML = `
+    <div class="date-group guide-group">
+      <div class="date-label">📘 가이드</div>
+      <ul>
+        ${guides.map(g => `
+          <li>
+            <button class="ver-btn ${current?.file === g.file ? 'active' : ''}" data-guide="${g.file}">
+              <span class="ver-kw">${g.title}</span>
+            </button>
+          </li>
+        `).join('')}
+      </ul>
+    </div>
+  `;
+  nav.querySelectorAll('.ver-btn').forEach(b => {
+    b.addEventListener('click', () => selectGuide(b.dataset.guide));
+  });
+}
+
 function renderSidebar() {
   const nav = $('#versionList');
   const groups = groupByDate(versions);
-  nav.innerHTML = groups.map(([date, items]) => `
+  nav.innerHTML = `<div class="date-label version-header">📅 버전 로그</div>` + groups.map(([date, items]) => `
     <div class="date-group">
       <div class="date-label">${date}</div>
       <ul>
@@ -63,6 +91,23 @@ async function selectVersion(file) {
       <span class="file-name">${current.file}</span>
     `;
     $('#docBody').innerHTML = marked.parse(md);
+    renderGuideList();
+    renderSidebar();
+  } catch (e) {
+    alert('읽기 실패: ' + e.message);
+  }
+}
+
+async function selectGuide(file) {
+  try {
+    const md = await fetchText(`./guide/${file}`);
+    current = guides.find(g => g.file === file);
+    $('#empty').hidden = true;
+    $('#content').hidden = false;
+    $('#docTitle').textContent = current.title;
+    $('#docMeta').innerHTML = `<span class="kw-badge">📘 가이드</span> <span class="file-name">${current.file}</span>`;
+    $('#docBody').innerHTML = marked.parse(md);
+    renderGuideList();
     renderSidebar();
   } catch (e) {
     alert('읽기 실패: ' + e.message);
@@ -71,7 +116,11 @@ async function selectVersion(file) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   try {
-    versions = await fetchJSON('./versions.json');
+    [versions, guides] = await Promise.all([
+      fetchJSON('./versions.json'),
+      fetchJSONOptional('./guide.json'),
+    ]);
+    renderGuideList();
     renderSidebar();
     if (versions.length) selectVersion(versions[0].file);
   } catch (e) {
