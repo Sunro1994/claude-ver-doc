@@ -6,21 +6,73 @@
   <title>Claude Code 버전 대시보드</title>
   <link rel="stylesheet" href="./style.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <style>
+    body {
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+    }
+    #topbar {
+      grid-column: 1 / -1;
+      background: #1d1d1f;
+      color: #f5f5f7;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 10px 20px;
+      border-bottom: 1px solid #2a2a2e;
+    }
+    #topbar .brand h1 { margin: 0; font-size: 15px; font-weight: 600; }
+    #topbar .brand .subtitle { margin: 2px 0 0; font-size: 11px; color: #98989d; }
+    #guideList {
+      flex: 1;
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 2px 0;
+      scrollbar-width: thin;
+    }
+    .guide-btn {
+      background: #2a2a2e;
+      color: #f5f5f7;
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12.5px;
+      white-space: nowrap;
+      transition: background 0.12s;
+      font-family: inherit;
+    }
+    .guide-btn:hover { background: #3a3a3e; }
+    .guide-btn.active { background: #0a84ff; border-color: #0a84ff; }
+    #sidebar { height: auto; }
+    #sidebar > .section-label {
+      padding: 14px 18px 8px;
+      font-size: 11px;
+      color: #98989d;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    #main { height: auto; }
+  </style>
 </head>
 <body>
-  <aside id="sidebar">
-    <header>
+  <header id="topbar">
+    <div class="brand">
       <h1>📊 Claude Code</h1>
       <p class="subtitle">버전별 ChangeLog (한글 요약)</p>
-    </header>
+    </div>
     <nav id="guideList" aria-label="가이드"></nav>
+  </header>
+  <aside id="sidebar">
+    <div class="section-label">📅 버전 로그</div>
     <nav id="versionList" aria-label="버전 목록">불러오는 중…</nav>
     <footer>
       <small><a href="https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md" target="_blank" rel="noopener">공식 CHANGELOG ↗</a></small>
     </footer>
   </aside>
   <main id="main">
-    <div id="empty">왼쪽에서 버전을 선택하세요.</div>
+    <div id="empty">위 가이드나 왼쪽 버전을 선택하세요.</div>
     <article id="content" hidden>
       <header id="docHeader">
         <h2 id="docTitle"></h2>

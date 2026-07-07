@@ -34,21 +34,12 @@ function groupByDate(list) {
 function renderGuideList() {
   const nav = $('#guideList');
   if (!guides.length) { nav.innerHTML = ''; return; }
-  nav.innerHTML = `
-    <div class="date-group guide-group">
-      <div class="date-label">📘 가이드</div>
-      <ul>
-        ${guides.map(g => `
-          <li>
-            <button class="ver-btn ${current?.file === g.file ? 'active' : ''}" data-guide="${g.file}">
-              <span class="ver-kw">${g.title}</span>
-            </button>
-          </li>
-        `).join('')}
-      </ul>
-    </div>
-  `;
-  nav.querySelectorAll('.ver-btn').forEach(b => {
+  nav.innerHTML = guides.map(g => `
+    <button class="guide-btn ${current?.file === g.file ? 'active' : ''}" data-guide="${g.file}">
+      ${g.title}
+    </button>
+  `).join('');
+  nav.querySelectorAll('.guide-btn').forEach(b => {
     b.addEventListener('click', () => selectGuide(b.dataset.guide));
   });
 }
@@ -56,7 +47,7 @@ function renderGuideList() {
 function renderSidebar() {
   const nav = $('#versionList');
   const groups = groupByDate(versions);
-  nav.innerHTML = `<div class="date-label version-header">📅 버전 로그</div>` + groups.map(([date, items]) => `
+  nav.innerHTML = groups.map(([date, items]) => `
     <div class="date-group">
       <div class="date-label">${date}</div>
       <ul>
@@ -122,7 +113,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     ]);
     renderGuideList();
     renderSidebar();
-    if (versions.length) selectVersion(versions[0].file);
+    if (guides.length) await selectGuide(guides[0].file);
+    else if (versions.length) await selectVersion(versions[0].file);
   } catch (e) {
     $('#versionList').textContent = '오류: ' + e.message;
   }
